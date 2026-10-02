@@ -1,0 +1,1614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#05070c">
+<title>BILLAR AI — El futuro de la experiencia del billar</title>
+<meta name="description" content="Convertimos mesas de billar tradicionales en mesas inteligentes: cámara, visión artificial, análisis de jugadas, marcador digital, estadísticas y Web App.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   BASE
+============================================================ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#05070c;
+  --bg2:#080c14;
+  --txt:#e9eef7;
+  --muted:#8d9aae;
+  --green:#12b981;
+  --green-l:#3ee0a6;
+  --cyan:#38e1d6;
+  --gold:#f0c14b;
+  --red:#ef5d5d;
+  --violet:#8b5cf6;
+  --stroke:rgba(255,255,255,.09);
+  --stroke2:rgba(255,255,255,.18);
+  --glass:linear-gradient(160deg,rgba(255,255,255,.065),rgba(255,255,255,.018));
+  --r:20px;
+  --ease:cubic-bezier(.2,.7,.2,1);
+}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  background:var(--bg);color:var(--txt);
+  font-family:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  line-height:1.62;overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+img,svg,canvas{display:block;max-width:100%}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+a{color:inherit;text-decoration:none}
+ul{list-style:none}
+h1,h2,h3,h4{font-family:'Space Grotesk','Inter',system-ui,sans-serif;line-height:1.12;letter-spacing:-.02em;font-weight:700}
+section{scroll-margin-top:86px;position:relative}
+
+/* ============================================================
+   FONDO GLOBAL
+============================================================ */
+.bg-fx{
+  position:fixed;inset:0;z-index:-3;pointer-events:none;
+  background:
+    radial-gradient(1200px 720px at 12% -12%, rgba(18,185,129,.20), transparent 62%),
+    radial-gradient(900px 620px at 92% 6%, rgba(56,225,214,.11), transparent 60%),
+    radial-gradient(900px 900px at 50% 118%, rgba(240,193,75,.07), transparent 62%),
+    var(--bg);
+}
+.bg-grid{
+  position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,255,255,.032) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.032) 1px,transparent 1px);
+  background-size:64px 64px;
+  -webkit-mask-image:radial-gradient(circle at 50% 26%,#000 12%,transparent 72%);
+  mask-image:radial-gradient(circle at 50% 26%,#000 12%,transparent 72%);
+}
+.bg-noise{
+  position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.028;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   LAYOUT
+============================================================ */
+.container{width:100%;max-width:1180px;margin:0 auto;padding:0 20px}
+.section{padding:clamp(68px,9vw,130px) 0}
+.sec-head{max-width:790px;margin:0 auto clamp(38px,5vw,60px);text-align:center}
+.kicker{
+  display:inline-flex;align-items:center;gap:9px;
+  font-size:.7rem;letter-spacing:.22em;text-transform:uppercase;font-weight:700;
+  color:var(--green-l);padding:7px 15px;border-radius:999px;
+  border:1px solid rgba(18,185,129,.32);background:rgba(18,185,129,.08);
+  margin-bottom:20px;
+}
+.kicker::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green-l);box-shadow:0 0 12px var(--green-l);animation:pulseDot 2s infinite}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.7)}}
+h2{font-size:clamp(1.85rem,4.3vw,2.95rem)}
+.sec-head p{color:var(--muted);font-size:clamp(.98rem,1.6vw,1.08rem);margin-top:18px}
+.grad{background:linear-gradient(100deg,#3ee0a6,#38e1d6 46%,#f0c14b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--muted)}
+
+.grid-2{display:grid;gap:22px;grid-template-columns:repeat(2,1fr)}
+.grid-3{display:grid;gap:22px;grid-template-columns:repeat(3,1fr)}
+.grid-4{display:grid;gap:20px;grid-template-columns:repeat(4,1fr)}
+@media(max-width:960px){.grid-3,.grid-4{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:620px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr}}
+
+/* ============================================================
+   REVEAL / ANIMACIONES
+============================================================ */
+.reveal{opacity:0;transform:translateY(30px);transition:opacity .85s var(--ease),transform .85s var(--ease)}
+.reveal.in{opacity:1;transform:none}
+.reveal-l{opacity:0;transform:translateX(-32px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.reveal-l.in{opacity:1;transform:none}
+.reveal-r{opacity:0;transform:translateX(32px);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.reveal-r.in{opacity:1;transform:none}
+.zoom{opacity:0;transform:scale(.94);transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.zoom.in{opacity:1;transform:none}
+
+/* ============================================================
+   BARRA DE PROGRESO
+============================================================ */
+.progress{position:fixed;top:0;left:0;height:2px;width:0;z-index:120;
+  background:linear-gradient(90deg,var(--green),var(--cyan),var(--gold));
+  box-shadow:0 0 14px rgba(62,224,166,.7)}
+
+/* ============================================================
+   NAV
+============================================================ */
+.nav{position:fixed;top:0;left:0;right:0;z-index:100;transition:background .4s,backdrop-filter .4s,border-color .4s,padding .4s;
+  border-bottom:1px solid transparent;padding:14px 0}
+.nav.scrolled{background:rgba(6,9,15,.78);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom-color:rgba(255,255,255,.07);padding:9px 0}
+.nav-inner{display:flex;align-items:center;gap:22px}
+.brand{display:flex;align-items:center;gap:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:1.06rem;letter-spacing:.02em;white-space:nowrap}
+.brand-ball{width:20px;height:20px;border-radius:50%;
+  background:radial-gradient(circle at 32% 28%,#3ee0a6,#0e8f66 55%,#063d2c);
+  box-shadow:0 0 18px rgba(62,224,166,.65), inset 0 -3px 6px rgba(0,0,0,.5);
+  animation:ballRoll 6s linear infinite}
+@keyframes ballRoll{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
+.brand em{font-style:normal;color:var(--green-l)}
+.nav-links{display:flex;gap:4px;margin-left:auto}
+.nav-links a{font-size:.86rem;color:var(--muted);padding:8px 13px;border-radius:10px;transition:color .25s,background .25s;font-weight:500}
+.nav-links a:hover{color:var(--txt);background:rgba(255,255,255,.055)}
+.nav-cta{margin-left:8px}
+.burger{display:none;width:42px;height:42px;border-radius:12px;border:1px solid var(--stroke);
+  background:rgba(255,255,255,.04);align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.burger span{display:block;width:17px;height:2px;background:var(--txt);border-radius:2px;transition:.3s var(--ease)}
+.burger.open span:nth-child(1){transform:translateY(6px) rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0}
+.burger.open span:nth-child(3){transform:translateY(-6px) rotate(-45deg)}
+@media(max-width:1000px){
+  .nav-links{position:fixed;top:62px;left:14px;right:14px;flex-direction:column;gap:2px;padding:14px;
+    background:rgba(8,12,20,.96);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border:1px solid var(--stroke);border-radius:20px;
+    opacity:0;visibility:hidden;transform:translateY(-14px);transition:.35s var(--ease);
+    box-shadow:0 30px 70px -30px #000}
+  .nav-links.open{opacity:1;visibility:visible;transform:none}
+  .nav-links a{padding:12px 14px;font-size:.95rem}
+  .burger{display:flex}
+  .nav-cta{display:none}
+}
+
+/* ============================================================
+   BOTONES
+============================================================ */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  padding:14px 26px;border-radius:14px;font-weight:600;font-size:.93rem;
+  transition:transform .35s var(--ease),box-shadow .35s,background .35s,border-color .35s;
+  border:1px solid transparent;white-space:nowrap;position:relative;overflow:hidden}
+.btn-sm{padding:10px 18px;font-size:.85rem;border-radius:12px}
+.btn-primary{background:linear-gradient(135deg,#12b981,#3ee0a6 55%,#38e1d6);color:#04150f;
+  box-shadow:0 16px 38px -18px rgba(18,185,129,.9)}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 22px 46px -18px rgba(62,224,166,.95)}
+.btn-ghost{border-color:var(--stroke2);background:rgba(255,255,255,.04);color:var(--txt)}
+.btn-ghost:hover{transform:translateY(-3px);border-color:rgba(62,224,166,.6);background:rgba(18,185,129,.09)}
+.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,.32) 50%,transparent 70%);
+  transform:translateX(-120%);transition:transform .8s var(--ease)}
+.btn:hover::after{transform:translateX(120%)}
+
+/* ============================================================
+   HERO
+============================================================ */
+.hero{position:relative;min-height:100svh;display:flex;align-items:center;padding:120px 0 70px;overflow:hidden}
+#heroCanvas{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.75}
+.hero-glow{position:absolute;left:50%;top:38%;width:min(880px,120vw);height:min(880px,120vw);
+  transform:translate(-50%,-50%);border-radius:50%;z-index:0;pointer-events:none;
+  background:radial-gradient(circle,rgba(18,185,129,.20),transparent 62%);filter:blur(30px)}
+.hero-inner{position:relative;z-index:2;text-align:center;width:100%}
+.hero-badge{display:inline-flex;align-items:center;gap:10px;padding:8px 16px;border-radius:999px;
+  background:rgba(255,255,255,.05);border:1px solid var(--stroke);font-size:.76rem;
+  letter-spacing:.1em;text-transform:uppercase;color:#b9c6d8;font-weight:600;
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.hero-badge i{width:7px;height:7px;border-radius:50%;background:var(--green-l);box-shadow:0 0 12px var(--green-l);
+  animation:pulseDot 1.8s infinite}
+.hero h1{font-size:clamp(2.9rem,11vw,7rem);letter-spacing:-.045em;margin:26px 0 0;line-height:.94;
+  background:linear-gradient(180deg,#ffffff 8%,#a9b8cc 62%,#5d6b80 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 0 90px rgba(18,185,129,.28)}
+.hero h1 span{display:block;background:linear-gradient(100deg,#3ee0a6,#38e1d6 48%,#f0c14b);
+  -webkit-background-clip:text;background-clip:text;color:transparent;font-size:.42em;letter-spacing:-.02em;margin-top:14px;font-weight:600}
+.hero p.hero-sub{max-width:660px;margin:24px auto 0;color:#9dabbe;font-size:clamp(.98rem,2vw,1.14rem)}
+.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:36px}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:860px;margin:60px auto 0}
+@media(max-width:640px){.hero-stats{grid-template-columns:repeat(2,1fr);gap:12px}}
+.stat{padding:18px 12px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid var(--stroke);
+  backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);transition:.4s var(--ease)}
+.stat:hover{transform:translateY(-5px);border-color:rgba(62,224,166,.45);background:rgba(18,185,129,.07)}
+.stat b{display:block;font-family:'Space Grotesk',sans-serif;font-size:clamp(1.5rem,4vw,2.1rem);
+  color:#fff;letter-spacing:-.03em;line-height:1}
+.stat b em{font-style:normal;color:var(--green-l)}
+.stat small{display:block;color:var(--muted);font-size:.73rem;margin-top:8px;letter-spacing:.03em;line-height:1.4}
+.scroll-hint{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:3;
+  display:flex;flex-direction:column;align-items:center;gap:8px;color:#6b7a90;font-size:.66rem;
+  letter-spacing:.24em;text-transform:uppercase}
+.scroll-hint i{width:1px;height:36px;background:linear-gradient(180deg,transparent,var(--green-l));animation:scrollLine 2s infinite}
+@keyframes scrollLine{0%{transform:scaleY(0);transform-origin:top}50%{transform:scaleY(1);transform-origin:top}
+  51%{transform:scaleY(1);transform-origin:bottom}100%{transform:scaleY(0);transform-origin:bottom}}
+
+/* ============================================================
+   TARJETAS
+============================================================ */
+.card{position:relative;border-radius:var(--r);padding:26px;
+  background:var(--glass);border:1px solid var(--stroke);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:transform .5s var(--ease),border-color .4s,box-shadow .5s;overflow:hidden;height:100%}
+.card::before{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .45s;
+  background:radial-gradient(420px 240px at var(--mx,50%) var(--my,0%),rgba(18,185,129,.16),transparent 70%)}
+.card:hover{transform:translateY(-7px);border-color:rgba(62,224,166,.42);box-shadow:0 34px 64px -38px rgba(18,185,129,.85)}
+.card:hover::before{opacity:1}
+.card h3{font-size:1.08rem;margin-bottom:10px;position:relative;z-index:1}
+.card p{color:var(--muted);font-size:.9rem;position:relative;z-index:1}
+.ico{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+  background:linear-gradient(150deg,rgba(18,185,129,.22),rgba(56,225,214,.08));
+  border:1px solid rgba(62,224,166,.28);color:var(--green-l);position:relative;z-index:1}
+.ico svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.ico.red{background:linear-gradient(150deg,rgba(239,93,93,.2),rgba(239,93,93,.05));border-color:rgba(239,93,93,.3);color:#ff8b8b}
+.ico.gold{background:linear-gradient(150deg,rgba(240,193,75,.22),rgba(240,193,75,.05));border-color:rgba(240,193,75,.32);color:var(--gold)}
+.ico.violet{background:linear-gradient(150deg,rgba(139,92,246,.24),rgba(139,92,246,.06));border-color:rgba(139,92,246,.34);color:#b79cff}
+.tag{display:inline-block;margin-top:16px;font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;
+  color:#7f8ca0;border:1px solid var(--stroke);padding:5px 11px;border-radius:999px;position:relative;z-index:1}
+
+/* ============================================================
+   SIMULADOR
+============================================================ */
+.sim-shell{border-radius:26px;overflow:hidden;border:1px solid var(--stroke);background:rgba(8,12,19,.72);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 50px 100px -60px #000}
+.sim-tabs{display:flex;gap:6px;padding:14px;border-bottom:1px solid var(--stroke);flex-wrap:wrap}
+.sim-tab{padding:10px 20px;border-radius:11px;font-size:.85rem;font-weight:600;color:var(--muted);
+  border:1px solid transparent;transition:.35s var(--ease)}
+.sim-tab:hover{color:var(--txt);background:rgba(255,255,255,.05)}
+.sim-tab.active{color:#04150f;background:linear-gradient(135deg,#12b981,#3ee0a6);box-shadow:0 10px 26px -12px rgba(18,185,129,.9)}
+.sim-stage{position:relative;aspect-ratio:16/9;background:radial-gradient(ellipse at 50% 40%,#0a1a16,#050a09 70%)}
+@media(max-width:620px){.sim-stage{aspect-ratio:4/3.4}}
+#simCanvas{width:100%;height:100%}
+.sim-hud{position:absolute;top:14px;left:16px;display:flex;gap:8px;flex-wrap:wrap;pointer-events:none}
+.chip{font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;padding:6px 11px;border-radius:999px;
+  background:rgba(5,10,9,.7);border:1px solid rgba(62,224,166,.3);color:var(--green-l);font-weight:600;
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.chip.live::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:#ef5d5d;
+  margin-right:6px;vertical-align:middle;animation:pulseDot 1.3s infinite}
+.sim-caption{padding:20px 24px 24px;color:#9dabbe;font-size:.93rem;border-top:1px solid var(--stroke);margin:0}
+
+/* ============================================================
+   WEB APP / TELÉFONO
+============================================================ */
+.app-wrap{display:grid;grid-template-columns:.85fr 1.15fr;gap:52px;align-items:center}
+@media(max-width:900px){.app-wrap{grid-template-columns:1fr;gap:38px}}
+.phone{width:100%;max-width:300px;margin:0 auto;border-radius:42px;padding:12px;position:relative;
+  background:linear-gradient(160deg,#1b2431,#0a0e15 60%);
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 50px 100px -45px #000, 0 0 70px -20px rgba(18,185,129,.35)}
+.phone::before{content:'';position:absolute;top:12px;left:50%;transform:translateX(-50%);
+  width:92px;height:20px;border-radius:0 0 14px 14px;background:#05070c;z-index:5}
+.screen{position:relative;border-radius:32px;overflow:hidden;background:#080d14;height:520px;
+  border:1px solid rgba(255,255,255,.06)}
+.app-screen{position:absolute;inset:0;padding:52px 18px 20px;opacity:0;transform:translateY(14px) scale(.98);
+  transition:opacity .6s var(--ease),transform .6s var(--ease);pointer-events:none;display:flex;flex-direction:column;gap:12px}
+.app-screen.active{opacity:1;transform:none;pointer-events:auto}
+.as-title{font-family:'Space Grotesk',sans-serif;font-size:1rem;font-weight:700}
+.as-sub{font-size:.7rem;color:#6f7d90;margin-top:-8px}
+.as-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-radius:14px;
+  background:rgba(255,255,255,.035);border:1px solid var(--stroke);font-size:.8rem}
+.as-row b{font-weight:600}
+.dotst{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:7px}
+.st-free{background:#3ee0a6;box-shadow:0 0 10px #3ee0a6}
+.st-busy{background:#f0c14b;box-shadow:0 0 10px #f0c14b}
+.st-play{background:#38e1d6;box-shadow:0 0 10px #38e1d6}
+.as-bar{height:8px;border-radius:6px;background:rgba(255,255,255,.08);overflow:hidden}
+.as-bar i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#12b981,#38e1d6)}
+.as-cta{margin-top:auto;text-align:center;padding:13px;border-radius:14px;font-weight:700;font-size:.84rem;
+  background:linear-gradient(135deg,#12b981,#3ee0a6);color:#04150f;box-shadow:0 14px 30px -16px rgba(18,185,129,.95)}
+.app-dots{display:flex;gap:8px;justify-content:center;margin-top:22px}
+.app-dots i{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.16);transition:.35s var(--ease);cursor:pointer}
+.app-dots i.on{background:var(--green-l);width:24px;border-radius:6px;box-shadow:0 0 14px rgba(62,224,166,.8)}
+.feat-list{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+@media(max-width:520px){.feat-list{grid-template-columns:1fr}}
+.feat{display:flex;gap:12px;align-items:flex-start;padding:16px;border-radius:15px;
+  background:rgba(255,255,255,.03);border:1px solid var(--stroke);transition:.4s var(--ease)}
+.feat:hover{transform:translateX(5px);border-color:rgba(62,224,166,.4);background:rgba(18,185,129,.06)}
+.feat svg{width:18px;height:18px;flex:none;margin-top:3px;stroke:var(--green-l);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.feat b{display:block;font-size:.87rem}
+.feat small{color:var(--muted);font-size:.76rem;line-height:1.45}
+
+/* ============================================================
+   HARDWARE
+============================================================ */
+.hw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;position:relative}
+@media(max-width:900px){.hw-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.hw-grid{grid-template-columns:1fr}}
+.hw{border-radius:20px;padding:24px 20px;text-align:center;border:1px solid var(--stroke);
+  background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:.5s var(--ease);position:relative}
+.hw:hover{transform:translateY(-8px);border-color:rgba(62,224,166,.45);box-shadow:0 34px 60px -40px rgba(18,185,129,.9)}
+.hw-ico{width:64px;height:64px;margin:0 auto 16px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(150deg,rgba(18,185,129,.2),rgba(56,225,214,.05));
+  border:1px solid rgba(62,224,166,.26);color:var(--green-l)}
+.hw-ico svg{width:28px;height:28px;stroke:currentColor;fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.hw b{font-family:'Space Grotesk',sans-serif;font-size:1rem;display:block;margin-bottom:6px}
+.hw p{color:var(--muted);font-size:.82rem}
+.hw-plus{display:flex;align-items:center;justify-content:center;color:var(--green-l);font-size:1.6rem;font-weight:300}
+@media(max-width:520px){.hw-plus{transform:rotate(90deg)}}
+
+/* ============================================================
+   ESPECIFICACIONES
+============================================================ */
+.spec-card{border-radius:20px;padding:24px;border:1px solid var(--stroke);background:var(--glass);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:.45s var(--ease);height:100%}
+.spec-card:hover{transform:translateY(-6px);border-color:rgba(62,224,166,.4)}
+.spec-card h4{font-size:.95rem;margin-bottom:16px;display:flex;align-items:center;gap:10px;color:#fff}
+.spec-card h4 span{width:8px;height:8px;border-radius:50%;background:var(--green-l);box-shadow:0 0 12px var(--green-l);flex:none}
+.spec-list li{display:flex;gap:10px;align-items:flex-start;font-size:.83rem;color:#9dabbe;padding:7px 0;
+  border-bottom:1px dashed rgba(255,255,255,.055)}
+.spec-list li:last-child{border-bottom:0}
+.spec-list li::before{content:'';width:5px;height:5px;border-radius:50%;background:rgba(62,224,166,.6);flex:none;margin-top:8px}
+.spec-list li b{color:#dbe4f0;font-weight:600}
+
+/* ============================================================
+   PRECIOS
+============================================================ */
+.price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;align-items:stretch}
+@media(max-width:900px){.price-grid{grid-template-columns:1fr}}
+.price-card{border-radius:22px;padding:28px 24px;border:1px solid var(--stroke);background:var(--glass);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:.5s var(--ease);
+  display:flex;flex-direction:column;position:relative;overflow:hidden}
+.price-card:hover{transform:translateY(-8px);border-color:rgba(62,224,166,.4)}
+.price-card.featured{border-color:rgba(62,224,166,.55);
+  background:linear-gradient(165deg,rgba(18,185,129,.14),rgba(8,14,20,.75));
+  box-shadow:0 40px 90px -50px rgba(18,185,129,.95);transform:scale(1.03)}
+@media(max-width:900px){.price-card.featured{transform:none}}
+.price-card.featured:hover{transform:translateY(-8px) scale(1.03)}
+@media(max-width:900px){.price-card.featured:hover{transform:translateY(-8px)}}
+.badge-rec{position:absolute;top:16px;right:16px;font-size:.6rem;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:800;padding:6px 12px;border-radius:999px;color:#04150f;
+  background:linear-gradient(120deg,#3ee0a6,#f0c14b);box-shadow:0 8px 22px -10px rgba(62,224,166,.95)}
+.price-tag{font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.price{font-family:'Space Grotesk',sans-serif;font-size:clamp(1.7rem,4vw,2.2rem);letter-spacing:-.03em;margin:14px 0 4px;color:#fff;line-height:1.05}
+.price small{font-size:.5em;color:var(--muted);font-weight:500}
+.price-cur{font-size:.76rem;color:#6f7d90;letter-spacing:.06em}
+.price-list{margin-top:22px;display:flex;flex-direction:column;gap:9px}
+.price-list li{font-size:.82rem;color:#9dabbe;display:flex;gap:9px;align-items:flex-start}
+.price-list li::before{content:'✓';color:var(--green-l);font-weight:800;font-size:.8rem;flex:none}
+
+/* ============================================================
+   BLOQUES DESTACADOS
+============================================================ */
+.highlight{border-radius:26px;padding:clamp(26px,4vw,44px);border:1px solid rgba(62,224,166,.28);
+  background:linear-gradient(150deg,rgba(18,185,129,.13),rgba(8,13,20,.72));
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+  box-shadow:0 44px 90px -60px rgba(18,185,129,.95);position:relative;overflow:hidden}
+.highlight::after{content:'';position:absolute;top:-60%;right:-15%;width:420px;height:420px;border-radius:50%;
+  background:radial-gradient(circle,rgba(62,224,166,.16),transparent 65%);pointer-events:none}
+.hl-grid{display:grid;grid-template-columns:1fr auto;gap:34px;align-items:center;position:relative;z-index:1}
+@media(max-width:820px){.hl-grid{grid-template-columns:1fr;gap:26px}}
+.hl-amount{font-family:'Space Grotesk',sans-serif;font-size:clamp(2.4rem,8vw,3.6rem);letter-spacing:-.035em;
+  line-height:1;background:linear-gradient(120deg,#fff,#3ee0a6);-webkit-background-clip:text;background-clip:text;color:transparent}
+.hl-amount small{font-size:.34em;display:block;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);
+  -webkit-text-fill-color:var(--muted);margin-bottom:10px;font-weight:600}
+.check-list li{display:flex;gap:11px;align-items:flex-start;font-size:.88rem;color:#b6c2d3;padding:6px 0}
+.check-list li::before{content:'✓';color:var(--green-l);font-weight:800;flex:none}
+.steps-num{display:grid;gap:14px;margin-top:26px}
+.step-item{display:flex;gap:14px;align-items:flex-start;padding:15px 18px;border-radius:15px;
+  background:rgba(255,255,255,.03);border:1px solid var(--stroke);transition:.4s var(--ease)}
+.step-item:hover{border-color:rgba(62,224,166,.4);transform:translateX(5px)}
+.step-item b{width:28px;height:28px;flex:none;border-radius:9px;display:flex;align-items:center;justify-content:center;
+  background:rgba(18,185,129,.16);color:var(--green-l);font-family:'Space Grotesk',sans-serif;font-size:.78rem;
+  border:1px solid rgba(62,224,166,.3)}
+.step-item p{font-size:.85rem;color:#9dabbe;margin:0}
+.step-item p strong{color:#e4ebf5;font-weight:600}
+.notice{margin-top:26px;font-size:.78rem;color:#78869a;border-left:2px solid rgba(240,193,75,.5);
+  padding:12px 0 12px 16px;line-height:1.6}
+
+/* ============================================================
+   ESCALABILIDAD
+============================================================ */
+.scale-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:34px}
+.scale-btn{padding:13px 28px;border-radius:14px;border:1px solid var(--stroke);background:rgba(255,255,255,.035);
+  font-weight:700;font-size:.92rem;font-family:'Space Grotesk',sans-serif;transition:.4s var(--ease);color:#a9b6c8}
+.scale-btn:hover{border-color:rgba(62,224,166,.45);color:#fff;transform:translateY(-3px)}
+.scale-btn.active{background:linear-gradient(135deg,#12b981,#3ee0a6);color:#04150f;border-color:transparent;
+  box-shadow:0 16px 36px -18px rgba(18,185,129,.95)}
+.scale-stage{border-radius:24px;padding:34px 24px;border:1px solid var(--stroke);background:rgba(8,12,19,.6);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);min-height:300px;
+  display:flex;align-items:center;justify-content:center}
+.scale-grid{display:grid;gap:12px;justify-content:center;width:100%;max-width:760px}
+.tbl{aspect-ratio:1.35;border-radius:12px;background:linear-gradient(160deg,rgba(18,185,129,.34),rgba(6,40,30,.55));
+  border:1px solid rgba(62,224,166,.35);display:flex;align-items:center;justify-content:center;
+  font-family:'Space Grotesk',sans-serif;font-size:.72rem;font-weight:700;color:#9ff0cf;
+  opacity:0;transform:scale(.4) translateY(12px);animation:tblIn .55s var(--ease) forwards;
+  box-shadow:inset 0 0 22px rgba(62,224,166,.16)}
+@keyframes tblIn{to{opacity:1;transform:none}}
+.scale-readout{text-align:center;margin-top:26px;color:var(--muted);font-size:.9rem}
+.scale-readout b{color:var(--green-l);font-family:'Space Grotesk',sans-serif;font-size:1.3rem}
+
+/* ============================================================
+   PANEL ADMIN
+============================================================ */
+.panel-shell{border-radius:26px;border:1px solid var(--stroke);background:rgba(7,11,18,.75);
+  backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);overflow:hidden;box-shadow:0 50px 100px -60px #000}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:18px 22px;
+  border-bottom:1px solid var(--stroke);flex-wrap:wrap}
+.panel-head h4{font-size:.9rem;letter-spacing:.06em}
+.panel-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.7rem;color:var(--muted);letter-spacing:.06em}
+.panel-legend span{display:inline-flex;align-items:center;gap:7px}
+.panel-body{padding:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:820px){.panel-body{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.panel-body{grid-template-columns:1fr}}
+.tcard{border-radius:16px;padding:18px;border:1px solid var(--stroke);background:rgba(255,255,255,.03);
+  transition:.55s var(--ease);position:relative;overflow:hidden}
+.tcard::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,#3ee0a6);
+  box-shadow:0 0 18px var(--c,#3ee0a6);transition:.5s}
+.tcard.free{--c:#3ee0a6}
+.tcard.booked{--c:#f0c14b}
+.tcard.playing{--c:#38e1d6}
+.tcard.done{--c:#8b5cf6}
+.tcard:hover{transform:translateY(-4px);border-color:var(--c)}
+.tcard-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.tcard-top b{font-family:'Space Grotesk',sans-serif;font-size:1rem}
+.tcard-top small{font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;font-weight:800;color:var(--c)}
+.tcard-info{font-size:.78rem;color:var(--muted);line-height:1.7}
+.tcard-info strong{color:#dbe4f0;font-weight:600}
+
+/* ============================================================
+   TECNOLOGÍA (PILARES)
+============================================================ */
+.tech-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+@media(max-width:900px){.tech-row{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.tech-row{grid-template-columns:repeat(2,1fr)}}
+.tech{border-radius:18px;padding:22px 16px;text-align:center;border:1px solid var(--stroke);
+  background:var(--glass);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);transition:.45s var(--ease)}
+.tech:hover{transform:translateY(-7px);border-color:rgba(62,224,166,.45);background:rgba(18,185,129,.07)}
+.tech b{display:block;font-family:'Space Grotesk',sans-serif;font-size:.9rem;margin-bottom:8px}
+.tech span{display:inline-block;font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--green-l);font-weight:800;padding:5px 12px;border-radius:999px;
+  background:rgba(18,185,129,.12);border:1px solid rgba(62,224,166,.28)}
+.tech small{display:block;color:var(--muted);font-size:.74rem;margin-top:12px;line-height:1.5}
+
+/* ============================================================
+   TOP BUTTON
+============================================================ */
+.top-btn{position:fixed;right:18px;bottom:18px;z-index:90;width:46px;height:46px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;border:1px solid var(--stroke2);
+  background:rgba(10,15,22,.85);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  color:var(--green-l);opacity:0;visibility:hidden;transform:translateY(14px);transition:.4s var(--ease)}
+.top-btn.show{opacity:1;visibility:visible;transform:none}
+.top-btn:hover{border-color:rgba(62,224,166,.6);background:rgba(18,185,129,.16)}
+
+/* ============================================================
+   ACCESIBILIDAD / MOTION
+============================================================ */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;
+    transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .reveal,.reveal-l,.reveal-r,.zoom{opacity:1!important;transform:none!important}
+}
+@media(max-width:620px){
+  .card,.price-card,.hw,.spec-card,.highlight,.sim-shell,.panel-shell{backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+}
+::selection{background:rgba(18,185,129,.35);color:#fff}
+</style>
+</head>
+<body>
+
+<div class="bg-fx"></div>
+<div class="bg-grid"></div>
+<div class="bg-noise"></div>
+<div class="progress" id="progress"></div>
+
+<!-- ================= NAV ================= -->
+<header class="nav" id="nav">
+  <div class="container nav-inner">
+    <a href="#hero" class="brand"><span class="brand-ball"></span><span>BILLAR<em>AI</em></span></a>
+    <nav class="nav-links" id="navLinks">
+      <a href="#solucion">Solución</a>
+      <a href="#vision">Tecnología</a>
+      <a href="#app">Web App</a>
+      <a href="#escalabilidad">Escalabilidad</a>
+      <a href="#panel">Panel</a>
+    </nav>
+    <a href="#panel" class="btn btn-primary btn-sm nav-cta">Solicitar demo</a>
+    <button class="burger" id="burger" aria-label="Abrir menú"><span></span><span></span><span></span></button>
+  </div>
+</header>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="hero">
+  <canvas id="heroCanvas"></canvas>
+  <div class="hero-glow" id="heroGlow"></div>
+  <div class="container hero-inner">
+    <div class="hero-badge reveal"><i></i> Visión artificial aplicada al billar</div>
+    <h1 class="reveal">BILLAR AI<span>El futuro de la experiencia del billar</span></h1>
+    <p class="hero-sub reveal">
+      Convertimos mesas de billar tradicionales en mesas inteligentes. Una cámara observa la mesa,
+      el sistema reconoce cada bola y cada jugada, y el marcador se actualiza solo.
+      Sin cambiar la mesa. Sin cambiar la forma de jugar.
+    </p>
+    <div class="hero-cta reveal">
+      <a href="#vision" class="btn btn-primary">Ver cómo funciona</a>
+      <a href="#panel" class="btn btn-ghost">Ver el panel en acción</a>
+    </div>
+
+    <div class="hero-stats reveal">
+      <div class="stat"><b><em data-count="16">0</em></b><small>Bolas detectadas<br>al mismo tiempo</small></div>
+      <div class="stat"><b><em data-count="60">0</em></b><small>Cuadros por segundo<br>de análisis de video</small></div>
+      <div class="stat"><b><em data-count="20">0</em></b><small>Mesas conectadas<br>en una sola instalación</small></div>
+      <div class="stat"><b><em data-count="24">0</em>/7</b><small>Sistema en línea,<br>sin intervención manual</small></div>
+    </div>
+  </div>
+  <div class="scroll-hint"><span>Desliza</span><i></i></div>
+</section>
+
+<!-- ================= SOLUCIÓN ================= -->
+<section class="section" id="solucion">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="kicker">La propuesta</span>
+      <h2>La misma mesa, ahora <span class="grad">con inteligencia</span></h2>
+      <p>No reemplazamos nada. Instalamos un sistema que observa, entiende y registra lo que ya pasa en la mesa.
+        El jugador juega igual; el negocio gana información, control y una experiencia nueva.</p>
+    </div>
+
+    <div class="grid-4">
+      <article class="card zoom">
+        <div class="ico">
+          <svg viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="8" cy="12" r="2"/><circle cx="15" cy="12" r="2"/></svg>
+        </div>
+        <h3>Mesa inteligente</h3>
+        <p>La mesa de siempre, equipada con lo necesario para que el sistema pueda ver y entender cada jugada.</p>
+      </article>
+
+      <article class="card zoom" style="transition-delay:.08s">
+        <div class="ico">
+          <svg viewBox="0 0 24 24"><path d="M3 7h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg>
+        </div>
+        <h3>Cámara</h3>
+        <p><strong>Los ojos del sistema.</strong> Ve la mesa completa desde arriba, todo el tiempo, sin moverse.</p>
+      </article>
+
+      <article class="card zoom" style="transition-delay:.16s">
+        <div class="ico">
+          <svg viewBox="0 0 24 24"><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/><circle cx="12" cy="12" r="4.5"/></svg>
+        </div>
+        <h3>Sistema inteligente</h3>
+        <p>Reconoce las bolas, sigue su movimiento y decide qué ocurrió en la jugada. Es el cerebro del proyecto.</p>
+      </article>
+
+      <article class="card zoom" style="transition-delay:.24s">
+        <div class="ico">
+          <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M6 10h6M6 14h9"/></svg>
+        </div>
+        <h3>Marcador digital</h3>
+        <p>El resultado aparece solo, en pantalla y en el celular. Sin fichas, sin discusiones, sin errores.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- ================= VISIÓN ARTIFICIAL ================= -->
+<section class="section" id="vision">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="kicker">Visión artificial en vivo</span>
+      <h2>Así <span class="grad">ve</span> el sistema una mesa de billar</h2>
+      <p>Esta simulación muestra, de forma sencilla, lo que ocurre dentro del sistema.
+        Cambia entre las tres pestañas para ver cada etapa.</p>
+    </div>
+
+    <div class="sim-shell reveal">
+      <div class="sim-tabs" role="tablist">
+        <button class="sim-tab active" data-mode="detect" role="tab">1 · Detección</button>
+        <button class="sim-tab" data-mode="track" role="tab">2 · Tracking</button>
+        <button class="sim-tab" data-mode="analyze" role="tab">3 · Análisis</button>
+      </div>
+      <div class="sim-stage">
+        <canvas id="simCanvas"></canvas>
+        <div class="sim-hud">
+          <span class="chip live">Cámara activa</span>
+          <span class="chip" id="hudMode">Detección de bolas</span>
+          <span class="chip" id="hudFps">60 FPS</span>
+        </div>
+      </div>
+      <p class="sim-caption" id="simCaption">
+        <strong>Detección:</strong> el sistema reconoce cada bola sobre el paño, le asigna un número y una
+        posición exacta, igual que si alguien las contara una por una, pero de forma automática.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ================= WEB APP ================= -->
+<section class="section" id="app">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="kicker">Web App para usuarios</span>
+      <h2>El jugador reserva desde su <span class="grad">celular</span></h2>
+      <p>La Web App es la cara visible del sistema. El cliente entra desde cualquier teléfono, sin instalar nada,
+        y en segundos sabe qué mesas hay disponibles y reserva la suya.</p>
+    </div>
+
+    <div class="app-wrap">
+      <div class="reveal-l">
+        <div class="phone">
+          <div class="screen" id="phoneScreen">
+            <div class="app-screen active" data-screen="0">
+              <div class="as-title">Mesas disponibles</div>
+              <div class="as-sub">Hoy · 20:30 h</div>
+              <div class="as-row"><span><i class="dotst st-free"></i><b>Mesa 01</b></span><span>Libre</span></div>
+              <div class="as-row"><span><i class="dotst st-play"></i><b>Mesa 02</b></span><span>En juego</span></div>
+              <div class="as-row"><span><i class="dotst st-free"></i><b>Mesa 03</b></span><span>Libre</span></div>
+              <div class="as-row"><span><i class="dotst st-busy"></i><b>Mesa 04</b></span><span>Reservada</span></div>
+              <div class="as-row"><span><i class="dotst st-free"></i><b>Mesa 05</b></span><span>Libre</span></div>
+              <div class="as-cta">Reservar una mesa</div>
+            </div>
+
+            <div class="app-screen" data-screen="1">
+              <div class="as-title">Mi reserva</div>
+              <div class="as-sub">Confirmación inmediata</div>
+              <div class="as-row"><span>Mesa</span><b>03</b></div>
+              <div class="as-row"><span>Fecha</span><b>Hoy</b></div>
+              <div class="as-row"><span>Hora</span><b>21:00</b></div>
+              <div class="as-row"><span>Duración</span><b>60 min</b></div>
+              <div class="as-row"><span>Estado</span><b style="color:#3ee0a6">Confirmada</b></div>
+              <div class="as-cta">Ver mis reservas</div>
+            </div>
+
+            <div class="app-screen" data-screen="2">
+              <div class="as-title">Mis estadísticas</div>
+              <div class="as-sub">Últimas 10 partidas</div>
+              <div class="as-row"><span>Partidas ganadas</span><b>7</b></div>
+              <div class="as-bar"><i style="width:70%"></i></div>
+              <div class="as-row"><span>Precisión de tiro</span><b>64%</b></div>
+              <div class="as-bar"><i style="width:64%"></i></div>
+              <div class="as-row"><span>Mejor racha</span><b>5 seguidas</b></div>
+              <div class="as-bar"><i style="width:82%"></i></div>
+              <div class="as-cta">Ver historial completo</div>
+            </div>
+          </div>
+        </div>
+        <div class="app-dots" id="appDots">
+          <i class="on" data-screen="0"></i><i data-screen="1"></i><i data-screen="2"></i>
+        </div>
+      </div>
+
+      <div class="reveal-r">
+        <div class="feat-list">
+          <div class="feat"><svg viewBox="0 0 24 24"><path d="M16 20v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2"/><circle cx="9.5" cy="7" r="3.5"/><path d="M19 8v6M22 11h-6"/></svg>
+            <div><b>Registrarse</b><small>Crea su cuenta en menos de un minuto con correo o teléfono.</small></div></div>
+
+          <div class="feat"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <div><b>Iniciar sesión</b><small>Entra desde cualquier dispositivo y conserva su historial.</small></div></div>
+
+          <div class="feat"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+            <div><b>Consultar disponibilidad</b><small>Ve en tiempo real qué mesas están libres ahora mismo.</small></div></div>
+
+          <div class="feat"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4M3 11h18M9 16l2 2 4-4"/></svg>
+            <div><b>Reservar mesas</b><small>Elige día, hora y mesa. La reserva queda confirmada al instante.</small></div></div>
+
+          <div class="feat"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            <div><b>Consultar sus reservas</b><small>Puede revisar, cambiar o cancelar sus reservas activas.</small></div></div>
+
+          <div class="feat"><svg viewBox="0 0 24 24"><path d="M5 3h14v18l-7-4-7 4z"/></svg>
+            <div><b>Ver resultados</b><small>El marcador final de cada partida queda guardado en su perfil.</small></div></div>
+
+          <div class="feat"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+            <div><b>Consultar estadísticas</b><small>Partidas jugadas, precisión, racha y evolución en el tiempo.</small></div></div>
+
+          <div class="feat"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5.5L20 9.5l-4 4 1 6-5-2.8L7 19.5l1-6-4-4 5.5-1z"/></svg>
+            <div><b>Ranking del club</b><small>Compara su nivel con otros jugadores del mismo establecimiento.</small></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= HARDWARE ================= -->
+<section class="section" id="hardware">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="kicker">Hardware</span>
+      <h2>Cuatro componentes. <span class="grad">Nada más.</span></h2>
+      <p>La instalación es sencilla y no requiere obra mayor. Estos son los elementos que se montan por mesa.</p>
+    </div>
+
+    <div class="hw-grid reveal">
+      <div class="hw">
+        <div class="hw-ico"><svg viewBox="0 0 24 24"><path d="M3 7h3l2-3h8l2 3h3v12H3z"/><circle cx="12" cy="13" r="3.4"/></svg></div>
+        <b>Cámara</b>
+        <p>Los ojos del sistema. Va montada en una posición fija sobre la mesa y observa todo el paño.</p>
+      </div>
+
+      <div class="hw">
+        <div class="hw-ico"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+        <b>Mini PC</b>
+        <p>El cerebro. Recibe el video de la cámara, lo analiza y decide qué está pasando en la mesa.</p>
+      </div>
+
+      <div class="hw">
+        <div class="hw-ico"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="13" rx="2"/><path d="M8 21h8M12 17v4"/></svg></div>
+        <b>Pantalla</b>
+        <p>La cara visible para el jugador. Muestra el marcador, el turno y los resultados en grande.</p>
+      </div>
+
+      <div class="hw">
+        <div class="hw-ico"><svg viewBox="0 0 24 24"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg></div>
+        <b>Protección eléctrica</b>
+        <p>Un UPS mantiene el sistema encendido y protege el equipo ante cortes o variaciones de luz.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ESPECIFICACIONES ================= -->
+<section class="section" id="specs">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="kicker">Especificaciones recomendadas</span>
+      <h2>Qué se recomienda <span class="grad">instalar</span></h2>
+      <p>Estas son las características técnicas sugeridas para que el sistema funcione con buena precisión
+        y sin fallas. Son recomendaciones, no requisitos rígidos.</p>
+    </div>
+
+    <div class="grid-4">
+      <div class="spec-card reveal">
+        <h4><span></span>Cámara</h4>
+        <ul class="spec-list">
+          <li><b>1080p</b> como mínimo</li>
+          <li><b>60 FPS</b> recomendado</li>
+          <li><b>Global Shutter</b> ideal</li>
+          <li>Control de exposición</li>
+          <li>Baja distorsión de imagen</li>
+        </ul>
+      </div>
+
+      <div class="spec-card reveal" style="transition-delay:.08s">
+        <h4><span></span>Mini PC</h4>
+        <ul class="spec-list">
+          <li><b>Intel N100</b> o equivalente</li>
+          <li><b>16 GB</b> de RAM</li>
+          <li><b>256 GB</b> SSD</li>
+          <li>Puertos <b>USB 3.0</b></li>
+          <li>Salida <b>HDMI</b> y <b>Ethernet</b></li>
+        </ul>
+      </div>
+
+      <div class="spec-card reveal" style="transition-delay:.16s">
+        <h4><span></span>Pantalla</h4>
+        <ul class="spec-list">
+          <li><b>24 pulgadas</b></li>
+          <li>Resolución <b>Full HD</b></li>
+          <li>Conexión <b>HDMI</b></li>
+          <li>Montaje <b>VESA</b> recomendado</li>
+        </ul>
+      </div>
+
+      <div class="spec-card reveal" style="transition-delay:.24s">
+        <h4><span></span>UPS</h4>
+        <ul class="spec-list">
+          <li><b>650 VA</b> como mínimo</li>
+          <li>Protege ante cortes de energía</li>
+          <li>Evita apagados inesperados</li>
+          <li>Alarga la vida del equipo</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= ESCALABILIDAD ================= -->
+<section class="section" id="escalabilidad">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="kicker">Escalabilidad</span>
+      <h2>El sistema crece <span class="grad">contigo</span></h2>
+      <p>El software se diseña desde el inicio para crecer. Empezar con una mesa no limita el futuro:
+        la misma plataforma administra un negocio completo.</p>
+    </div>
+
+    <div class="scale-btns reveal">
+      <button class="scale-btn active" data-n="1">1 Mesa</button>
+      <button class="scale-btn" data-n="6">6 Mesas</button>
+      <button class="scale-btn" data-n="10">10 Mesas</button>
+      <button class="scale-btn" data-n="20">20 Mesas</button>
+    </div>
+
+    <div class="scale-stage reveal">
+      <div class="scale-grid" id="scaleGrid"></div>
+    </div>
+
+    <div class="scale-readout reveal">
+      <b id="scaleCount">1</b> mesa<span id="scalePlural"></span> administrada<span id="scalePlural2"></span>
+      desde un solo panel · <span id="scaleMsg">Validación inicial del sistema.</span>
+    </div>
+  </div>
+</section>
+
+<!-- ================= PANEL ADMINISTRATIVO ================= -->
+<section class="section" id="panel">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="kicker">Panel administrativo</span>
+      <h2>Todo el negocio en <span class="grad">una sola pantalla</span></h2>
+      <p>El dueño ve en tiempo real el estado de cada mesa. Esta simulación muestra seis mesas con sus
+        cuatro estados posibles.</p>
+    </div>
+
+    <div class="panel-shell reveal">
+      <div class="panel-head">
+        <h4>MESAS · SALA PRINCIPAL</h4>
+        <div class="panel-legend">
+          <span><i class="dotst st-free"></i>Disponible</span>
+          <span><i class="dotst st-busy"></i>Reservada</span>
+          <span><i class="dotst st-play"></i>En juego</span>
+          <span><i class="dotst" style="background:#8b5cf6;box-shadow:0 0 10px #8b5cf6"></i>Terminada</span>
+        </div>
+      </div>
+      <div class="panel-body" id="panelBody"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TECNOLOGÍA ================= -->
+<section class="section" id="tecnologia">
+  <div class="container">
+    <div class="sec-head reveal">
+      <span class="kicker">Tecnología</span>
+      <h2>Cinco piezas, <span class="grad">una sola experiencia</span></h2>
+      <p>Cada elemento cumple una función clara. Aquí está explicado en una sola palabra.</p>
+    </div>
+
+    <div class="tech-row">
+      <div class="tech reveal">
+        <b>Cámara</b><span>Ve</span>
+        <small>Observa la mesa completa desde una posición fija.</small>
+      </div>
+      <div class="tech reveal" style="transition-delay:.07s">
+        <b>Visión artificial</b><span>Detecta</span>
+        <small>Reconoce las bolas y sigue su movimiento.</small>
+      </div>
+      <div class="tech reveal" style="transition-delay:.14s">
+        <b>Motor inteligente</b><span>Analiza</span>
+        <small>Interpreta qué ocurrió durante la jugada.</small>
+      </div>
+      <div class="tech reveal" style="transition-delay:.21s">
+        <b>Firebase</b><span>Conecta</span>
+        <small>Une usuarios, partidas, reservas y resultados.</small>
+      </div>
+      <div class="tech reveal" style="transition-delay:.28s">
+        <b>Pantalla</b><span>Muestra</span>
+        <small>Presenta el marcador y la información al jugador.</small>
+      </div>
+    </div>
+  </div>
+</section>
+
+<button class="top-btn" id="topBtn" aria-label="Volver arriba">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<script>
+(function(){
+'use strict';
+const $  = (s,c)=> (c||document).querySelector(s);
+const $$ = (s,c)=> Array.prototype.slice.call((c||document).querySelectorAll(s));
+const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const canHover = window.matchMedia('(hover:hover)').matches;
+
+/* ============================================================
+   1. BARRA DE PROGRESO + NAV + PARALLAX
+============================================================ */
+const progress = $('#progress');
+const nav = $('#nav');
+const topBtn = $('#topBtn');
+const heroGlow = $('#heroGlow');
+let ticking = false;
+
+function onScroll(){
+  const y = window.scrollY || window.pageYOffset;
+  const h = document.documentElement.scrollHeight - window.innerHeight;
+  progress.style.width = (h > 0 ? (y/h)*100 : 0) + '%';
+  nav.classList.toggle('scrolled', y > 40);
+  topBtn.classList.toggle('show', y > 700);
+  if(heroGlow && !reduceMotion && y < window.innerHeight*1.4){
+    heroGlow.style.transform = 'translate(-50%,-50%) translateY(' + (y*0.18) + 'px)';
+    heroGlow.style.opacity = String(Math.max(0, 1 - y/900));
+  }
+  ticking = false;
+}
+window.addEventListener('scroll', function(){
+  if(!ticking){ ticking = true; requestAnimationFrame(onScroll); }
+}, {passive:true});
+onScroll();
+
+/* ============================================================
+   2. MENÚ MÓVIL
+============================================================ */
+const burger = $('#burger');
+const navLinks = $('#navLinks');
+burger.addEventListener('click', function(){
+  const open = navLinks.classList.toggle('open');
+  burger.classList.toggle('open', open);
+});
+$$('#navLinks a').forEach(function(a){
+  a.addEventListener('click', function(){
+    navLinks.classList.remove('open');
+    burger.classList.remove('open');
+  });
+});
+
+/* ============================================================
+   3. REVEAL AL SCROLL
+============================================================ */
+const revealEls = $$('.reveal, .reveal-l, .reveal-r, .zoom');
+if('IntersectionObserver' in window && !reduceMotion){
+  const io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+    });
+  }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+  revealEls.forEach(function(el){ io.observe(el); });
+} else {
+  revealEls.forEach(function(el){ el.classList.add('in'); });
+}
+
+/* ============================================================
+   4. CONTADORES ANIMADOS
+============================================================ */
+const counters = $$('[data-count]');
+function animateCounter(el){
+  const target = parseInt(el.getAttribute('data-count'), 10);
+  const dur = 1500;
+  const start = performance.now();
+  function frame(now){
+    const p = Math.min((now - start)/dur, 1);
+    const eased = 1 - Math.pow(1 - p, 3);
+    el.textContent = Math.round(target * eased);
+    if(p < 1) requestAnimationFrame(frame);
+    else el.textContent = target;
+  }
+  requestAnimationFrame(frame);
+}
+if('IntersectionObserver' in window && !reduceMotion){
+  const cio = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){ animateCounter(e.target); cio.unobserve(e.target); }
+    });
+  }, {threshold:0.5});
+  counters.forEach(function(c){ cio.observe(c); });
+} else {
+  counters.forEach(function(c){ c.textContent = c.getAttribute('data-count'); });
+}
+
+/* ============================================================
+   5. BOTÓN VOLVER ARRIBA
+============================================================ */
+topBtn.addEventListener('click', function(){
+  window.scrollTo({top:0, behavior: reduceMotion ? 'auto' : 'smooth'});
+});
+
+/* ============================================================
+   6. GLOW QUE SIGUE AL MOUSE EN TARJETAS
+============================================================ */
+if(canHover && !reduceMotion){
+  $$('.card, .price-card, .hw, .spec-card').forEach(function(card){
+    card.addEventListener('mousemove', function(ev){
+      const r = card.getBoundingClientRect();
+      card.style.setProperty('--mx', ((ev.clientX - r.left)/r.width*100) + '%');
+      card.style.setProperty('--my', ((ev.clientY - r.top)/r.height*100) + '%');
+    });
+  });
+}
+
+/* ============================================================
+   7. CANVAS DEL HERO — BOLAS DE BILLAR
+============================================================ */
+(function heroBalls(){
+  const cv = $('#heroCanvas');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  let W=0, H=0, dpr=1, balls=[], raf=null, running=true;
+  const COLORS = ['#f0c14b','#e0574b','#3b7dd8','#8b5cf6','#12b981','#e8862e','#dfe6ef','#12161d'];
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = Math.floor(W*dpr); cv.height = Math.floor(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    build();
+  }
+  function build(){
+    const n = W < 680 ? 6 : (W < 1100 ? 9 : 12);
+    balls = [];
+    for(let i=0;i<n;i++){
+      const r = 9 + Math.random()*13;
+      balls.push({
+        x: r + Math.random()*(W - 2*r),
+        y: r + Math.random()*(H - 2*r),
+        vx: (Math.random()-.5)*0.75,
+        vy: (Math.random()-.5)*0.75,
+        r: r,
+        c: COLORS[i % COLORS.length]
+      });
+    }
+  }
+  function step(){
+    for(let i=0;i<balls.length;i++){
+      const b = balls[i];
+      b.x += b.vx; b.y += b.vy;
+      if(b.x < b.r){ b.x = b.r; b.vx *= -1; }
+      if(b.x > W - b.r){ b.x = W - b.r; b.vx *= -1; }
+      if(b.y < b.r){ b.y = b.r; b.vy *= -1; }
+      if(b.y > H - b.r){ b.y = H - b.r; b.vy *= -1; }
+    }
+    for(let i=0;i<balls.length;i++){
+      for(let j=i+1;j<balls.length;j++){
+        const a = balls[i], b = balls[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        let d = Math.sqrt(dx*dx + dy*dy);
+        const min = a.r + b.r;
+        if(d > 0 && d < min){
+          const nx = dx/d, ny = dy/d;
+          const overlap = (min - d)/2;
+          a.x -= nx*overlap; a.y -= ny*overlap;
+          b.x += nx*overlap; b.y += ny*overlap;
+          const p = (a.vx - b.vx)*nx + (a.vy - b.vy)*ny;
+          a.vx -= p*nx; a.vy -= p*ny;
+          b.vx += p*nx; b.vy += p*ny;
+        }
+      }
+    }
+  }
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    for(let i=0;i<balls.length;i++){
+      const b = balls[i];
+      ctx.globalAlpha = 0.16;
+      ctx.fillStyle = b.c;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r*2.3, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 0.92;
+      const g = ctx.createRadialGradient(b.x - b.r*0.35, b.y - b.r*0.4, b.r*0.15, b.x, b.y, b.r);
+      g.addColorStop(0, '#ffffff');
+      g.addColorStop(0.28, b.c);
+      g.addColorStop(1, 'rgba(0,0,0,0.75)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
+      ctx.globalAlpha = 0.5;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(b.x - b.r*0.34, b.y - b.r*0.38, b.r*0.2, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  function loop(){
+    if(running && !reduceMotion){ step(); draw(); }
+    raf = requestAnimationFrame(loop);
+  }
+  if('IntersectionObserver' in window){
+    const hio = new IntersectionObserver(function(entries){
+      running = entries[0].isIntersecting;
+    }, {threshold:0});
+    hio.observe($('#hero'));
+  }
+  let rt;
+  window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(resize, 180); });
+  resize();
+  if(reduceMotion){ draw(); } else { loop(); }
+})();
+
+/* ============================================================
+   8. FLUJO INTERACTIVO (CÓMO FUNCIONA)
+   [SECCIÓN ELIMINADA — el bloque de JS se conserva pero no se ejecuta
+   porque ya no existen los nodos .flow-node en el DOM]
+============================================================ */
+(function flow(){
+  const nodes = $$('.flow-node');
+  if(!nodes.length) return;
+  /* ...código original intacto... */
+})();
+
+/* ============================================================
+   9. SIMULADOR DE VISIÓN ARTIFICIAL
+============================================================ */
+(function simulator(){
+  const cv = $('#simCanvas');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const hudMode = $('#hudMode');
+  const hudFps = $('#hudFps');
+  const caption = $('#simCaption');
+  const tabs = $$('.sim-tab');
+
+  let W=0, H=0, dpr=1, pad=0;
+  let balls = [], mode = 'detect';
+  let running = true, lastFps = performance.now(), frames = 0, fpsVal = 60, tAcc = 0;
+
+  const COLORS = ['#f0c14b','#e0574b','#3b7dd8','#8b5cf6','#12b981','#e8862e','#dfe6ef','#1a1f27'];
+
+  const captions = {
+    detect:'<strong>Detección:</strong> el sistema reconoce cada bola sobre el paño, le asigna un número y una posición exacta, igual que si alguien las contara una por una, pero de forma automática y en tiempo real.',
+    track:'<strong>Tracking:</strong> además de verlas, el sistema sigue el recorrido de cada bola cuadro por cuadro. Así sabe de dónde salió, hacia dónde va y con qué otras bolas se cruzó.',
+    analyze:'<strong>Análisis:</strong> con las trayectorias, el sistema calcula contactos, rebotes y el resultado probable de la jugada. Es lo que permite decidir si una bola entró o si hubo falta.'
+  };
+
+  function roundRect(c, x, y, w, h, r){
+    c.beginPath();
+    c.moveTo(x+r, y);
+    c.arcTo(x+w, y, x+w, y+h, r);
+    c.arcTo(x+w, y+h, x, y+h, r);
+    c.arcTo(x, y+h, x, y, r);
+    c.arcTo(x, y, x+w, y, r);
+    c.closePath();
+  }
+
+  function resize(){
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cv.clientWidth; H = cv.clientHeight;
+    cv.width = Math.floor(W*dpr); cv.height = Math.floor(H*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    pad = Math.max(14, Math.min(W, H) * 0.055);
+    build();
+  }
+
+  function build(){
+    const areaW = W - pad*2, areaH = H - pad*2;
+    balls = [];
+    const n = W < 560 ? 5 : 7;
+    for(let i=0;i<n;i++){
+      const r = Math.max(7, Math.min(W, H) * 0.026);
+      balls.push({
+        x: pad + r + Math.random()*(areaW - r*2),
+        y: pad + r + Math.random()*(areaH - r*2),
+        vx: (Math.random()-.5)*1.35,
+        vy: (Math.random()-.5)*1.35,
+        r: r,
+        c: COLORS[i % COLORS.length],
+        num: i + 1,
+        conf: 90 + Math.round(Math.random()*9),
+        trail: []
+      });
+    }
+  }
+
+  function step(dt){
+    const areaW = W - pad*2, areaH = H - pad*2;
+    for(let i=0;i<balls.length;i++){
+      const b = balls[i];
+      b.x += b.vx * dt; b.y += b.vy * dt;
+      if(b.x < pad + b.r){ b.x = pad + b.r; b.vx = Math.abs(b.vx); }
+      if(b.x > pad + areaW - b.r){ b.x = pad + areaW - b.r; b.vx = -Math.abs(b.vx); }
+      if(b.y < pad + b.r){ b.y = pad + b.r; b.vy = Math.abs(b.vy); }
+      if(b.y > pad + areaH - b.r){ b.y = pad + areaH - b.r; b.vy = -Math.abs(b.vy); }
+
+      b.trail.push({x:b.x, y:b.y});
+      if(b.trail.length > 26) b.trail.shift();
+
+      if(Math.random() < 0.006) b.conf = 90 + Math.round(Math.random()*9);
+    }
+    for(let i=0;i<balls.length;i++){
+      for(let j=i+1;j<balls.length;j++){
+        const a = balls[i], b = balls[j];
+        let dx = b.x - a.x, dy = b.y - a.y;
+        const d = Math.sqrt(dx*dx + dy*dy) || 0.001;
+        const min = a.r + b.r;
+        if(d < min){
+          const nx = dx/d, ny = dy/d;
+          const ov = (min - d)/2;
+          a.x -= nx*ov; a.y -= ny*ov;
+          b.x += nx*ov; b.y += ny*ov;
+          const p = (a.vx - b.vx)*nx + (a.vy - b.vy)*ny;
+          a.vx -= p*nx; a.vy -= p*ny;
+          b.vx += p*nx; b.vy += p*ny;
+        }
+      }
+    }
+  }
+
+  function drawTable(){
+    const areaW = W - pad*2, areaH = H - pad*2;
+    const g = ctx.createRadialGradient(W/2, H/2, 10, W/2, H/2, Math.max(W,H)*0.7);
+    g.addColorStop(0, 'rgba(12,58,44,0.95)');
+    g.addColorStop(1, 'rgba(4,18,15,0.95)');
+    ctx.fillStyle = g;
+    roundRect(ctx, pad, pad, areaW, areaH, 14);
+    ctx.fill();
+    ctx.strokeStyle = 'rgba(62,224,166,0.28)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(pad, pad + areaH/2);
+    ctx.lineTo(pad + areaW, pad + areaH/2);
+    ctx.stroke();
+    const rr = Math.max(6, Math.min(W,H)*0.022);
+    const pts = [
+      [pad, pad],[W/2, pad],[W-pad, pad],
+      [pad, H-pad],[W/2, H-pad],[W-pad, H-pad]
+    ];
+    ctx.fillStyle = 'rgba(0,0,0,0.75)';
+    pts.forEach(function(p){
+      ctx.beginPath(); ctx.arc(p[0], p[1], rr, 0, Math.PI*2); ctx.fill();
+    });
+  }
+
+  function drawBalls(){
+    for(let i=0;i<balls.length;i++){
+      const b = balls[i];
+      const g = ctx.createRadialGradient(b.x - b.r*0.35, b.y - b.r*0.4, b.r*0.12, b.x, b.y, b.r);
+      g.addColorStop(0, '#ffffff');
+      g.addColorStop(0.3, b.c);
+      g.addColorStop(1, 'rgba(0,0,0,0.8)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  function drawDetect(){
+    ctx.font = '600 ' + Math.max(9, Math.min(W,H)*0.026) + 'px Inter, sans-serif';
+    for(let i=0;i<balls.length;i++){
+      const b = balls[i];
+      const m = b.r + 6;
+      ctx.strokeStyle = 'rgba(62,224,166,0.95)';
+      ctx.lineWidth = 1.6;
+      roundRect(ctx, b.x-m, b.y-m, m*2, m*2, 6);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(62,224,166,1)';
+      ctx.lineWidth = 2.4;
+      const c = 7;
+      const x0 = b.x-m, y0 = b.y-m, x1 = b.x+m, y1 = b.y+m;
+      ctx.beginPath();
+      ctx.moveTo(x0, y0+c); ctx.lineTo(x0, y0); ctx.lineTo(x0+c, y0);
+      ctx.moveTo(x1-c, y0); ctx.lineTo(x1, y0); ctx.lineTo(x1, y0+c);
+      ctx.moveTo(x1, y1-c); ctx.lineTo(x1, y1); ctx.lineTo(x1-c, y1);
+      ctx.moveTo(x0+c, y1); ctx.lineTo(x0, y1); ctx.lineTo(x0, y1-c);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(62,224,166,0.95)';
+      ctx.fillText('#' + b.num + '  ' + b.conf + '%', b.x - m, b.y - m - 7);
+    }
+  }
+
+  function drawTrack(){
+    for(let i=0;i<balls.length;i++){
+      const b = balls[i];
+      const tr = b.trail;
+      for(let k=1;k<tr.length;k++){
+        const a = (k/tr.length) * 0.55;
+        ctx.strokeStyle = 'rgba(56,225,214,' + a.toFixed(3) + ')';
+        ctx.lineWidth = Math.max(1, b.r*0.28);
+        ctx.beginPath();
+        ctx.moveTo(tr[k-1].x, tr[k-1].y);
+        ctx.lineTo(tr[k].x, tr[k].y);
+        ctx.stroke();
+      }
+      const len = 34;
+      const mag = Math.hypot(b.vx, b.vy) || 1;
+      ctx.strokeStyle = 'rgba(62,224,166,0.85)';
+      ctx.lineWidth = 1.6;
+      ctx.beginPath();
+      ctx.moveTo(b.x, b.y);
+      ctx.lineTo(b.x + (b.vx/mag)*len, b.y + (b.vy/mag)*len);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(62,224,166,0.9)';
+      ctx.beginPath();
+      ctx.arc(b.x + (b.vx/mag)*len, b.y + (b.vy/mag)*len, 3, 0, Math.PI*2);
+      ctx.fill();
+      ctx.setLineDash([4,5]);
+      ctx.strokeStyle = 'rgba(62,224,166,0.5)';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.arc(b.x, b.y, b.r + 9, 0, Math.PI*2); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  function drawAnalyze(){
+    const b = balls[0];
+    if(!b) return;
+    const areaW = W - pad*2, areaH = H - pad*2;
+    const mag = Math.hypot(b.vx, b.vy) || 1;
+    const dx = b.vx/mag, dy = b.vy/mag;
+
+    let tWall = Infinity;
+    if(dx > 0) tWall = Math.min(tWall, (pad + areaW - b.r - b.x)/dx);
+    if(dx < 0) tWall = Math.min(tWall, (pad + b.r - b.x)/dx);
+    if(dy > 0) tWall = Math.min(tWall, (pad + areaH - b.r - b.y)/dy);
+    if(dy < 0) tWall = Math.min(tWall, (pad + b.r - b.y)/dy);
+    if(!isFinite(tWall) || tWall < 0) tWall = 0;
+
+    let tBest = tWall, hitBall = null;
+    for(let i=1;i<balls.length;i++){
+      const o = balls[i];
+      const ox = o.x - b.x, oy = o.y - b.y;
+      const proj = ox*dx + oy*dy;
+      if(proj <= 0) continue;
+      const perp2 = (ox*ox + oy*oy) - proj*proj;
+      const R = b.r + o.r;
+      if(perp2 > R*R) continue;
+      const t = proj - Math.sqrt(R*R - perp2);
+      if(t > 0 && t < tBest){ tBest = t; hitBall = o; }
+    }
+
+    const hx = b.x + dx*tBest, hy = b.y + dy*tBest;
+
+    ctx.setLineDash([7,6]);
+    ctx.strokeStyle = 'rgba(240,193,75,0.95)';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y);
+    ctx.lineTo(hx, hy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    const pulse = 1 + Math.sin(tAcc*0.006)*0.35;
+    ctx.strokeStyle = 'rgba(240,193,75,0.9)';
+    ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(hx, hy, (b.r+7)*pulse, 0, Math.PI*2); ctx.stroke();
+    ctx.fillStyle = 'rgba(240,193,75,0.95)';
+    ctx.beginPath(); ctx.arc(hx, hy, 3.2, 0, Math.PI*2); ctx.fill();
+
+    if(hitBall){
+      const nx = hitBall.x - hx, ny = hitBall.y - hy;
+      const nm = Math.hypot(nx, ny) || 1;
+      ctx.strokeStyle = 'rgba(56,225,214,0.9)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(hitBall.x, hitBall.y);
+      ctx.lineTo(hitBall.x + (nx/nm)*52, hitBall.y + (ny/nm)*52);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(56,225,214,0.95)';
+      ctx.beginPath();
+      ctx.arc(hitBall.x + (nx/nm)*52, hitBall.y + (ny/nm)*52, 3.4, 0, Math.PI*2);
+      ctx.fill();
+      ctx.font = '600 ' + Math.max(9, Math.min(W,H)*0.026) + 'px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(240,193,75,0.98)';
+      ctx.fillText('Contacto', hx + 10, hy - 10);
+    } else {
+      const nX = (dx > 0 ? -1 : (dx < 0 ? 1 : 0));
+      const nY = (dy > 0 ? -1 : (dy < 0 ? 1 : 0));
+      let rx = dx, ry = dy;
+      if(Math.abs(tWall - ((dx>0?(pad+areaW-b.r-b.x)/dx:(dx<0?(pad+b.r-b.x)/dx:Infinity)))) < 0.001){ rx = -dx; }
+      else { ry = -dy; }
+      ctx.setLineDash([5,6]);
+      ctx.strokeStyle = 'rgba(56,225,214,0.85)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(hx, hy);
+      ctx.lineTo(hx + rx*62, hy + ry*62);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = '600 ' + Math.max(9, Math.min(W,H)*0.026) + 'px Inter, sans-serif';
+      ctx.fillStyle = 'rgba(56,225,214,0.95)';
+      ctx.fillText('Rebote en banda', hx + 8, hy + (nY <= 0 ? -12 : 18));
+    }
+
+    ctx.font = '600 ' + Math.max(9, Math.min(W,H)*0.024) + 'px Inter, sans-serif';
+    for(let i=1;i<balls.length;i++){
+      const o = balls[i];
+      ctx.fillStyle = 'rgba(255,255,255,0.4)';
+      ctx.fillText('#' + o.num, o.x - 6, o.y - o.r - 8);
+    }
+  }
+
+  function draw(){
+    ctx.clearRect(0, 0, W, H);
+    drawTable();
+    drawBalls();
+    if(mode === 'detect') drawDetect();
+    else if(mode === 'track') drawTrack();
+    else drawAnalyze();
+  }
+
+  let prev = performance.now();
+  function loop(now){
+    const dt = Math.min((now - prev)/16.666, 2.2);
+    prev = now;
+    tAcc = now;
+
+    if(running && !reduceMotion){
+      step(dt);
+      draw();
+
+      frames++;
+      if(now - lastFps > 700){
+        fpsVal = Math.round(frames * 1000 / (now - lastFps));
+        frames = 0; lastFps = now;
+        if(hudFps) hudFps.textContent = Math.min(fpsVal, 60) + ' FPS';
+      }
+    }
+    requestAnimationFrame(loop);
+  }
+
+  tabs.forEach(function(tab){
+    tab.addEventListener('click', function(){
+      tabs.forEach(function(t){ t.classList.remove('active'); });
+      tab.classList.add('active');
+      mode = tab.getAttribute('data-mode');
+      if(hudMode){
+        hudMode.textContent = mode === 'detect' ? 'Detección de bolas'
+          : mode === 'track' ? 'Seguimiento de trayectorias'
+          : 'Análisis de jugada';
+      }
+      if(caption) caption.innerHTML = captions[mode];
+      if(reduceMotion) draw();
+    });
+  });
+
+  if('IntersectionObserver' in window){
+    const sio = new IntersectionObserver(function(entries){
+      running = entries[0].isIntersecting;
+    }, {threshold:0.05});
+    sio.observe(cv);
+  }
+
+  let rt;
+  window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(resize, 180); });
+
+  resize();
+  requestAnimationFrame(loop);
+})();
+
+/* ============================================================
+   10. MARCADOR DIGITAL INTERACTIVO
+   [SECCIÓN ELIMINADA — el bloque de JS se conserva pero no se ejecuta
+   porque ya no existe #scoreBoard en el DOM]
+============================================================ */
+(function scoreboard(){
+  const board = $('#scoreBoard');
+  if(!board) return;
+  /* ...código original intacto... */
+})();
+
+/* ============================================================
+   11. PANTALLAS DE LA WEB APP
+============================================================ */
+(function appScreens(){
+  const screens = $$('.app-screen');
+  const dots = $$('#appDots i');
+  if(!screens.length) return;
+  let idx = 0, timer = null;
+
+  function go(i){
+    idx = i;
+    screens.forEach(function(s, k){ s.classList.toggle('active', k === i); });
+    dots.forEach(function(d, k){ d.classList.toggle('on', k === i); });
+  }
+  dots.forEach(function(d){
+    d.addEventListener('click', function(){
+      clearInterval(timer);
+      go(parseInt(d.getAttribute('data-screen'), 10));
+      start();
+    });
+  });
+  function start(){
+    if(reduceMotion) return;
+    timer = setInterval(function(){ go((idx + 1) % screens.length); }, 4000);
+  }
+  go(0);
+  start();
+})();
+
+/* ============================================================
+   12. ESCALABILIDAD
+============================================================ */
+(function scalability(){
+  const grid = $('#scaleGrid');
+  if(!grid) return;
+  const btns = $$('.scale-btn');
+  const countEl = $('#scaleCount');
+  const msgEl = $('#scaleMsg');
+
+  const layout = {
+    1:  { cols: 1, msg: 'Validación inicial: se prueba la precisión y la comodidad del sistema.' },
+    6:  { cols: 3, msg: 'Instalación completa: el negocio entero funciona con un solo panel.' },
+    10: { cols: 5, msg: 'Crecimiento: se añaden mesas sin cambiar el software.' },
+    20: { cols: 5, msg: 'Operación a gran escala: varias salas administradas desde un mismo lugar.' }
+  };
+
+  function render(n){
+    const cfg = layout[n];
+    grid.style.gridTemplateColumns = 'repeat(' + cfg.cols + ', minmax(0,1fr))';
+    grid.innerHTML = '';
+    for(let i=0;i<n;i++){
+      const d = document.createElement('div');
+      d.className = 'tbl';
+      d.textContent = 'M' + String(i+1).padStart(2,'0');
+      d.style.animationDelay = (i * 0.045) + 's';
+      grid.appendChild(d);
+    }
+    countEl.textContent = n;
+    msgEl.textContent = cfg.msg;
+    const plural = n > 1 ? 's' : '';
+    $('#scalePlural').textContent = plural;
+    $('#scalePlural2').textContent = plural;
+  }
+
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){
+      btns.forEach(function(x){ x.classList.remove('active'); });
+      b.classList.add('active');
+      render(parseInt(b.getAttribute('data-n'), 10));
+    });
+  });
+
+  let started = false;
+  if('IntersectionObserver' in window){
+    const sio = new IntersectionObserver(function(entries){
+      if(entries[0].isIntersecting && !started){ started = true; render(1); }
+    }, {threshold:0.2});
+    sio.observe(grid);
+  } else { render(1); }
+})();
+
+/* ============================================================
+   13. PANEL ADMINISTRATIVO SIMULADO
+============================================================ */
+(function adminPanel(){
+  const body = $('#panelBody');
+  if(!body) return;
+
+  const STATES = {
+    free:    { label:'Disponible', cls:'free' },
+    booked:  { label:'Reservada',  cls:'booked' },
+    playing: { label:'En juego',   cls:'playing' },
+    done:    { label:'Terminada',  cls:'done' }
+  };
+
+  const tables = [];
+  for(let i=0;i<6;i++){
+    tables.push({
+      n: i+1,
+      state: i % 2 === 0 ? 'free' : (i === 1 ? 'playing' : 'booked'),
+      player: 'Cliente ' + (i+2),
+      time: '00:00',
+      mins: 0
+    });
+  }
+
+  function build(){
+    body.innerHTML = '';
+    tables.forEach(function(t, i){
+      const el = document.createElement('div');
+      el.className = 'tcard ' + STATES[t.state].cls;
+      el.id = 'tcard' + i;
+      el.innerHTML =
+        '<div class="tcard-top"><b>MESA 0' + t.n + '</b><small data-role="state">' + STATES[t.state].label + '</small></div>' +
+        '<div class="tcard-info">' +
+          '<div>Jugador: <strong data-role="player">' + t.player + '</strong></div>' +
+          '<div>Tiempo: <strong data-role="time">' + t.time + '</strong></div>' +
+          '<div>Partidas hoy: <strong data-role="games">' + (2 + i) + '</strong></div>' +
+        '</div>';
+      body.appendChild(el);
+    });
+  }
+
+  function update(i){
+    const t = tables[i];
+    const el = $('#tcard' + i);
+    if(!el) return;
+    el.className = 'tcard ' + STATES[t.state].cls;
+    $('[data-role="state"]', el).textContent = STATES[t.state].label;
+    $('[data-role="player"]', el).textContent = t.state === 'free' ? '—' : t.player;
+    $('[data-role="time"]', el).textContent = t.time;
+  }
+
+  function cycle(){
+    const i = Math.floor(Math.random() * tables.length);
+    const t = tables[i];
+    const order = ['free','booked','playing','done'];
+    const next = order[(order.indexOf(t.state) + 1) % order.length];
+    t.state = next;
+    if(next === 'playing'){ t.mins = 0; t.time = '00:00'; t.player = 'Cliente ' + (Math.floor(Math.random()*8)+1); }
+    update(i);
+  }
+
+  build();
+
+  let inView = true;
+  if('IntersectionObserver' in window){
+    const pio = new IntersectionObserver(function(entries){ inView = entries[0].isIntersecting; }, {threshold:0.1});
+    pio.observe(body);
+  }
+
+  setInterval(function(){
+    if(!inView || reduceMotion) return;
+    tables.forEach(function(t, i){
+      if(t.state === 'playing' || t.state === 'booked'){
+        t.mins++;
+        const m = Math.floor(t.mins/60), s = t.mins % 60;
+        t.time = (m<10?'0':'') + m + ':' + (s<10?'0':'') + s;
+        const el = $('#tcard' + i);
+        if(el) $('[data-role="time"]', el).textContent = t.time;
+      }
+    });
+  }, 1000);
+
+  setInterval(function(){
+    if(!inView || reduceMotion) return;
+    cycle();
+  }, 3200);
+})();
+
+})();
+</script>
+</body>
+</html>
